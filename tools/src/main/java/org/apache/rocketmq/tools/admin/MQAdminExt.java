@@ -282,4 +282,6 @@ public interface MQAdminExt extends MQAdmin {
             throws RemotingException, MQClientException, InterruptedException, MQBrokerException;
 
     boolean resumeCheckHalfMessage(final String topic, final String msgId) throws RemotingException, MQClientException, InterruptedException, MQBrokerException;
+
+    long querySlaveFallBehindMaster(final String brokerAddr) throws RemotingException, MQClientException, InterruptedException, MQBrokerException;
 }

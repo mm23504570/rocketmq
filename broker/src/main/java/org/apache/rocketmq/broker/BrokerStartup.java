@@ -53,9 +53,10 @@ public class BrokerStartup {
     public static CommandLine commandLine = null;
     public static String configFile = null;
     public static InternalLogger log;
+    public static BrokerController controller;
 
     public static void main(String[] args) {
-        start(createBrokerController(args));
+        controller = start(createBrokerController(args));
     }
 
     public static BrokerController start(BrokerController controller) {

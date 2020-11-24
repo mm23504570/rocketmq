@@ -26,6 +26,7 @@ import org.apache.rocketmq.broker.client.ClientChannelInfo;
 import org.apache.rocketmq.broker.client.ConsumerGroupInfo;
 import org.apache.rocketmq.broker.filter.ConsumerFilterData;
 import org.apache.rocketmq.broker.filter.ExpressionMessageFilter;
+import org.apache.rocketmq.common.protocol.header.QuerySlaveFallBehindMasterResponseHeader;
 import org.apache.rocketmq.common.topic.TopicValidator;
 import org.apache.rocketmq.broker.transaction.queue.TransactionalMessageUtil;
 import org.apache.rocketmq.common.AclConfig;
@@ -234,11 +235,22 @@ public class AdminBrokerProcessor extends AsyncNettyRequestProcessor implements 
                 return resumeCheckHalfMessage(ctx, request);
             case RequestCode.GET_BROKER_CLUSTER_ACL_CONFIG:
                 return getBrokerClusterAclConfig(ctx, request);
+            case RequestCode.QUERY_SLAVE_FALL_BEHIND_MASTER:
+                return querySlaveFallBehindMaster(ctx, request);
             default:
                 break;
         }
 
         return null;
+    }
+
+    private RemotingCommand querySlaveFallBehindMaster(ChannelHandlerContext ctx, RemotingCommand request) {
+        final RemotingCommand response = RemotingCommand.createResponseCommand(QuerySlaveFallBehindMasterResponseHeader.class);
+        QuerySlaveFallBehindMasterResponseHeader querySlaveFallBehindMasterResponseHeader  = (QuerySlaveFallBehindMasterResponseHeader) response.readCustomHeader();
+        querySlaveFallBehindMasterResponseHeader.setSlaveFallBehindMaster(this.brokerController.getMessageStore().slaveFallBehindMuch());
+        response.setCode(ResponseCode.SUCCESS);
+        response.setRemark(null);
+        return response;
     }
 
     @Override

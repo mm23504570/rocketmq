@@ -121,6 +121,7 @@ import org.apache.rocketmq.common.protocol.header.QueryConsumerOffsetRequestHead
 import org.apache.rocketmq.common.protocol.header.QueryConsumerOffsetResponseHeader;
 import org.apache.rocketmq.common.protocol.header.QueryCorrectionOffsetHeader;
 import org.apache.rocketmq.common.protocol.header.QueryMessageRequestHeader;
+import org.apache.rocketmq.common.protocol.header.QuerySlaveFallBehindMasterResponseHeader;
 import org.apache.rocketmq.common.protocol.header.QueryTopicConsumeByWhoRequestHeader;
 import org.apache.rocketmq.common.protocol.header.ResetOffsetRequestHeader;
 import org.apache.rocketmq.common.protocol.header.ResumeCheckHalfMessageRequestHeader;
@@ -2259,5 +2260,22 @@ public class MQClientAPIImpl {
                 log.error("Failed to resume half message check logic. Remark={}", response.getRemark());
                 return false;
         }
+    }
+
+    public long querySlaveFallBehindMaster(String brokerAddr, long timeoutMillis) throws InterruptedException, RemotingTimeoutException, RemotingSendRequestException, RemotingConnectException, MQBrokerException, RemotingCommandException {
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.QUERY_SLAVE_FALL_BEHIND_MASTER, null);
+        RemotingCommand response = this.remotingClient
+                .invokeSync(MixAll.brokerVIPChannel(this.clientConfig.isVipChannelEnabled(), brokerAddr), request, timeoutMillis);
+        assert response != null;
+        switch (response.getCode()) {
+            case ResponseCode.SUCCESS: {
+                QuerySlaveFallBehindMasterResponseHeader commandCustomHeader = (QuerySlaveFallBehindMasterResponseHeader) response.decodeCommandCustomHeader(QuerySlaveFallBehindMasterResponseHeader.class);
+                return commandCustomHeader.getSlaveFallBehindMaster();
+            }
+            default:
+                break;
+        }
+        throw new MQBrokerException(response.getCode(), response.getRemark());
+
     }
 }
